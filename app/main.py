@@ -1,14 +1,9 @@
 from fastapi import FastAPI
+from app.routers import developers
 
 app = FastAPI()
-
-users = []
+app.include_router(developers.router)
 
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
-
-@app.post("/users")
-def post_user(user: str):
-    users.append(user)
-    return users
