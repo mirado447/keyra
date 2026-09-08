@@ -11,4 +11,4 @@ class Application(Base):
     public_key = Column(String(255), unique=True, nullable=False)
     private_key_hash = Column(String(255), nullable=False)
     create_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    id_developer = Column(Integer, ForeignKey("developers.id"), nullable= False)
+    developer_id = Column(Integer, ForeignKey("developers.id"), nullable= False)
