@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from typing import cast
 
 from app.database import get_db
 from app.models import Developer
-from app.schemas.developer import DeveloperCreate, DeveloperOut
-from app.core.security import hash_password
+from app.schemas.developer import DeveloperCreate, DeveloperOut, DeveloperLogin
+from app.core.security import hash_password, verify_password, create_access_token
 
 router = APIRouter(prefix="/developers", tags=["developers"])
 
+# Crée un nouveau développeur
 @router.post("/register", response_model=DeveloperOut)
 def register_developer(developer: DeveloperCreate, db: Session = Depends(get_db)):
     hashed_password = hash_password(developer.password)
@@ -28,3 +30,14 @@ def register_developer(developer: DeveloperCreate, db: Session = Depends(get_db)
 
     db.refresh(new_developer)
     return new_developer
+
+# Authentifie un développeur puis génère un token JWT en cas de connexion réussie.
+@router.post("/login")
+def login_developer(credentials: DeveloperLogin, db: Session = Depends(get_db)):
+    developer = db.query(Developer).filter(Developer.email == credentials.email).first()
+
+    if not developer or not verify_password(credentials.password, cast(str, developer.password_hash)):
+        raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
+
+    access_token = create_access_token(data={"sub": str(developer.id)})
+    return {"access_token": access_token, "token_type": "bearer"}
