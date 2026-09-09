@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 import secrets
 
@@ -48,3 +48,23 @@ def get_applications(
         .filter(Application.developer_id == current_developer.id)
         .all()
     )
+
+@router.get("/{application_id}", response_model=ApplicationOut)
+def get_application(
+    application_id: int,
+    db: Session = Depends(get_db),
+    current_developer: Developer = Depends(get_current_developer),
+):
+    application = (
+        db.query(Application).
+        filter(
+            Application.id == application_id,
+            Application.developer_id == current_developer.id,
+        )
+        .first()
+    )
+
+    if application is None:
+        raise HTTPException(status_code=404, detail="Application introuvable")
+
+    return application
