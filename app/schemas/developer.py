@@ -1,11 +1,12 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 from datetime import datetime
 
 # Représente les données nécessaires pour créer un nouveau développeur
 class DeveloperCreate(BaseModel):
-    name: str
+    name: str = Field(min_length=2, max_length=100)
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8, max_length=72)
+
 # Représente les données d'un développeur retournées par l'API
 class DeveloperOut(BaseModel):
     id: int

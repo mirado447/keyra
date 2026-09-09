@@ -1,10 +1,10 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 from datetime import datetime
 
 class EndUserCreate(BaseModel):
-    name: str
+    name: str = Field(min_length=2, max_digits=100)
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8, max_length=72)
 
 class EndUserOut(BaseModel):
     id: int
