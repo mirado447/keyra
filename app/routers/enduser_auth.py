@@ -1,13 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.database import get_db
 from app.models import Enduser, Application, RefreshToken
 from app.schemas.enduser import EndUserCreate, EndUserLogin, EndUserOut
 from app.core.security import hash_password, verify_password, create_access_token, generate_refresh_token, hash_token
 from app.core.deps import get_application_by_public_key
+
+limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(prefix="/apps/{public_key}", tags=["end-user-auth"])
 
@@ -45,7 +49,9 @@ def register_enduser(
 
 # Authentifie un utilisateur et génère un access token et un refresh token
 @router.post("/login")
+@limiter.limit("5/minute")
 def login_enduser(
+    request: Request,
     public_key: str,
     credentials: EndUserLogin,
     db: Session = Depends(get_db),

@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from typing import cast
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.database import get_db
 from app.models import Developer
 from app.schemas.developer import DeveloperCreate, DeveloperOut, DeveloperLogin
 from app.core.security import hash_password, verify_password, create_access_token
+
+limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(prefix="/developers", tags=["developers"])
 
@@ -33,7 +37,8 @@ def register_developer(developer: DeveloperCreate, db: Session = Depends(get_db)
 
 # Authentifie un développeur puis génère un token JWT en cas de connexion réussie.
 @router.post("/login")
-def login_developer(credentials: DeveloperLogin, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def login_developer(request: Request, credentials: DeveloperLogin, db: Session = Depends(get_db)):
     developer = db.query(Developer).filter(Developer.email == credentials.email).first()
 
     if not developer or not verify_password(credentials.password, cast(str, developer.password_hash)):
