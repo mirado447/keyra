@@ -3,7 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Developer
+from app.models import Developer, Application
 from app.core.security import decode_access_token
 
 security_scheme = HTTPBearer()
@@ -27,3 +27,9 @@ def get_current_developer(
         raise HTTPException(status_code=401, detail="Developpeur introuvable")
 
     return developer
+
+def get_application_by_public_key(public_key: str, db: Session = Depends(get_db)) -> Application:
+    application = db.query(Application).filter(Application.public_key == public_key). first()
+    if application is None:
+        raise HTTPException(status_code=404, detail="Application introuvable")
+    return application

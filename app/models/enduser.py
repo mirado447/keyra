@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -37,4 +37,8 @@ class Enduser(Base):
     app_id: Mapped[int] = mapped_column(
         ForeignKey("applications.id"),
         nullable=False,
+    )
+
+    __table_args__ = (
+        UniqueConstraint("app_id", "email", name="uq_application_email"),
     )

@@ -3,8 +3,12 @@ from dotenv import load_dotenv
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
 import os
+import hashlib
+import secrets
 
 load_dotenv()
+
+REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 # Création d'un contexte de chiffrement/hachage des mots de passe avec bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -35,3 +39,14 @@ def decode_access_token(token: str) -> dict | None:
         return payload
     except JWTError:
         return None
+
+# Hashes un token avec SHA-256
+def hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+# Génère un refresh token, son hash et sa date d'expiration
+def generate_refresh_token() -> tuple[str, str, datetime]:
+    raw_token = secrets.token_urlsafe(48)
+    token_hash = hash_token(raw_token)
+    expires_at = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    return raw_token, token_hash, expires_at
