@@ -13,10 +13,9 @@ class DeveloperOut(BaseModel):
     name: str
     email: EmailStr
     create_at: datetime
+    model_config = ConfigDict(from_attributes=True)
 
 # Représente les identifiants nécessaires pour se connecter
 class DeveloperLogin(BaseModel):
     email: str
     password: str
-
-    model_config = ConfigDict(from_attributes=True)
