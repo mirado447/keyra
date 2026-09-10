@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
+from app.models import Enduser
 import secrets
 
 from app.database import get_db
@@ -43,11 +45,20 @@ def get_applications(
     db: Session = Depends(get_db),
     current_developer: Developer = Depends(get_current_developer)
 ):
-    return (
-        db.query(Application)
+    results = (
+        db.query(Application, func.count(Enduser.id).label("end_user_count"))
+        .outerjoin(Enduser, Enduser.app_id == Application.id)
         .filter(Application.developer_id == current_developer.id)
+        .group_by(Application.id)
         .all()
     )
+
+    applications = []
+    for app, count in results:
+        app_out = ApplicationOut.model_validate(app)
+        app_out.end_user_count = count
+        applications.append(app_out)
+    return applications
 
 @router.get("/{application_id}", response_model=ApplicationOut)
 def get_application(
