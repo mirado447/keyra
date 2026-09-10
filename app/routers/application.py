@@ -79,3 +79,34 @@ def get_application(
         raise HTTPException(status_code=404, detail="Application introuvable")
 
     return application
+
+@router.post("/{application_id}/regenerate-secret", response_model=ApplicationCreated)
+def regenerate_secret(
+    application_id: int,
+    db: Session = Depends(get_db),
+    current_developer: Developer = Depends(get_current_developer),
+):
+    application = (
+        db.query(Application)
+        .filter(
+            Application.id == application_id,
+            Application.developer_id == current_developer.id,
+        )
+        .first()
+    )
+
+    if application is None:
+        raise HTTPException(status_code=404, detail="Application introuvable")
+
+    new_private_key = secrets.token_urlsafe(32)
+    application.private_key_hash = hash_password(new_private_key)
+    db.commit()
+    db.refresh(application)
+
+    return ApplicationCreated(
+        id=application.id,
+        name=application.name,
+        public_key=application.public_key,
+        create_at=application.create_at,
+        private_key=new_private_key,
+    )
