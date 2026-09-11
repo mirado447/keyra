@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from typing import cast
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from app.core.deps import get_current_developer
 
 from app.database import get_db
 from app.models import Developer
@@ -46,3 +47,7 @@ def login_developer(request: Request, credentials: DeveloperLogin, db: Session =
 
     access_token = create_access_token(data={"sub": str(developer.id)})
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/me", response_model=DeveloperOut)
+def get_me(current_developer: Developer = Depends(get_current_developer)):
+    return current_developer
