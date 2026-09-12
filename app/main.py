@@ -25,8 +25,8 @@ def health_check():
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
-        "https://keyra-dashboard.vercel.app"],
+        "https://keyra-dashboard.vercel.app",
+        "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
