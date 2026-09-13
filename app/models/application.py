@@ -18,6 +18,11 @@ class Application(Base):
         nullable=False,
     )
 
+    description: Mapped[str] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
     public_key: Mapped[str] = mapped_column(
         String(255),
         unique=True,

@@ -24,6 +24,7 @@ def create_application(
 
     new_app = Application(
         name = application.name,
+        description = application.description,
         public_key = public_key,
         private_key_hash = private_key_hash,
         developer_id = current_developer.id,
@@ -35,6 +36,7 @@ def create_application(
     return ApplicationCreated(
         id= new_app.id,
         name= new_app.name,
+        description = new_app.description,
         public_key= new_app.public_key,
         create_at= new_app.create_at,
         private_key= private_key,

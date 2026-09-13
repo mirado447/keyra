@@ -3,10 +3,12 @@ from datetime import datetime
 
 class ApplicationCreate(BaseModel):
     name: str
+    description: str | None = None
 
 class ApplicationOut(BaseModel):
     id: int
     name: str
+    description: str | None = None
     public_key: str
     create_at: datetime
     end_user_count: int = 0
